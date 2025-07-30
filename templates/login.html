@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection</title>
+    <link rel="stylesheet" href="/static/css/default.css">
+    <link rel="stylesheet" href="/static/css/form.css">
+</head>
+<body>
+    <div>
+        <form id="login">
+            <h1>Connectez vous</h1>
+            <input type="text" placeholder="nom d'utilisateur" required autocomplete="off" id="username">
+            <input type="password" placeholder="mot de passe" required autocomplete="off" id="pswd">
+            <button id="sub" type="submit">se connecter</button>
+
+            <a href="/signin">s'inscrire</a>
+            <p id="error"></p>
+        </form>
+    </div>
+</body>
+<script src="/static/script/login.js"></script>
+</html>

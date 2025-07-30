@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publier une musique</title>
+    <link rel="stylesheet" href="/static/css/default.css">
+    <link rel="stylesheet" href="/static/css/form.css">
+</head>
+<body>
+    <div>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <h1>Publiez une musique</h1>
+            <input type="text" name="title" required placeholder="titre">
+            <input type="file" name="file" id="upload" style="display: none;" required>
+            <label id="uploadl" for="upload">choisir un fichier</label>
+            <button onclick="document.getElementById('sub').innerText = '...'" id="sub" type="submit">publier</button>
+        </form>
+    </div>
+</body>
+<script>
+    let filein = document.getElementById("upload")
+    let label = document.getElementById("uploadl")
+
+    filein.addEventListener("change", (e) => {
+        label.innerText = e.target.files[0].name
+    })
+</script>
+</html>
