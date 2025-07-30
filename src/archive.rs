@@ -1,4 +1,4 @@
-use std::{fs::{self, remove_file, File}, io::Write, time::SystemTime};
+use std::{env::var, fs::{self, remove_file, File}, io::Write, time::SystemTime};
 
 use actix_multipart::Multipart;
 use actix_web::{web, HttpRequest, Responder};
@@ -44,7 +44,7 @@ pub async fn upload(supabase: web::Data<SupabaseClient>, mut payload: Multipart,
         }
     }
 
-    let creds = Credentials::new("4sNCeYMjfNkT2D6K", "ShfGUrncqAfz2oD0");
+    let creds = Credentials::new(var("ACCESS_KEY").unwrap().as_str(), var("PRIVATE_KEY").unwrap().as_str());
 
     let track_query = supabase
         .select("Tracks")
