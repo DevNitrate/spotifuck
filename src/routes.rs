@@ -1,7 +1,11 @@
+use std::env::var;
+
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 use supabase_rs::SupabaseClient;
 
-use crate::{auth::is_user_logged_in, render_page};
+use crate::{auth::{get_playlist, is_user_logged_in}, render_page};
 
 pub fn redirect(path: &str) -> HttpResponse {
     HttpResponse::Found().append_header(("location", path)).finish()
@@ -37,4 +41,133 @@ async fn uploadp(supabase: web::Data<SupabaseClient>, req: HttpRequest) -> impl 
     } else {
         redirect("/login")
     }
+}
+
+#[derive(Deserialize)]
+struct TrackQuery {
+    track: String
+}
+
+#[derive(Debug, Deserialize)]
+struct Track {
+    title: String,
+    artist: String,
+    url: String,
+    format: String
+}
+
+#[derive(Deserialize, Serialize)]
+struct TrackCtx {
+    title: String,
+    artist: String,
+    url: String,
+    format: String,
+    playlist: String
+}
+
+#[actix_web::get("/search")]
+async fn search(supabase: web::Data<SupabaseClient>, req: HttpRequest, track: web::Query<TrackQuery>) -> impl Responder {
+    if is_user_logged_in(&supabase, &req).await {
+        let track_name = track.into_inner().track;
+
+        if !track_name.is_empty() {
+            let client = reqwest::Client::new();
+            let supabase_url = var("SUPABASE_URL").unwrap();
+            let supabase_key = var("SUPABASE_KEY").unwrap();
+    
+            let track_query = client.get(format!("{}/rest/v1/{}", supabase_url, "Tracks"))
+                .query(&[("title", format!("ilike.%{}%", track_name))])
+                .header("apikey", &supabase_key)
+                .header("Authorization", format!("Bearer {}", &supabase_key))
+                .header("Accept", "application/json")
+                .send().await.unwrap();
+    
+            let tracks: Vec<Track> = track_query.json().await.unwrap();
+            let mut tracks_ctx: Vec<TrackCtx> = Vec::new();
+
+            let playlist = get_playlist(&supabase, &req).await;
+            
+            for track in tracks {
+                let title = track.title.clone();
+                let in_playlist: &str;
+
+                if playlist.contains(&title) {
+                    in_playlist = "-";
+                } else {
+                    in_playlist = "+"
+                }
+
+                let track_ctx = TrackCtx {
+                    title: track.title,
+                    artist: track.artist,
+                    url: track.url,
+                    format: track.format,
+                    playlist: in_playlist.to_string()
+                };
+
+                tracks_ctx.push(track_ctx);
+            }
+    
+            let mut ctx = tera::Context::new();
+            ctx.insert("tracks", &tracks_ctx);
+            render_page("search.html", ctx)
+        } else {
+            let mut tracks: Vec<TrackCtx> = Vec::new();
+
+            let mut ctx = tera::Context::new();
+            ctx.insert("tracks", &tracks);
+            render_page("search.html", ctx)
+        }
+
+    } else {
+        redirect("/login")
+    }
+}
+
+#[actix_web::post("playlist/add/{track}")]
+async fn add_playlist(supabase: web::Data<SupabaseClient>, path: web::Path<String>, req: HttpRequest) -> impl Responder {
+    let track_title = path.into_inner();
+    let uuid = req.cookie("user_id").unwrap().value().to_string();
+
+    let playlist_query = supabase
+        .select("Users")
+        .eq("id", &uuid)
+        .execute().await.unwrap();
+
+    let mut playlist = playlist_query.first().unwrap()["playlist"].clone();
+
+    if let Some(track) = playlist["tracks"].as_array_mut() {
+        track.push(json!({
+            "title": track_title
+        }));
+    }
+
+    let _update = supabase.update_with_column_name("Users", "id", &uuid, json!({
+        "playlist": playlist
+    })).await.unwrap();
+
+    HttpResponse::Ok()
+}
+
+#[actix_web::post("playlist/delete/{track}")]
+async fn del_playlist(supabase: web::Data<SupabaseClient>, path: web::Path<String>, req: HttpRequest) -> impl Responder {
+    let track_title = path.into_inner();
+    let uuid = req.cookie("user_id").unwrap().value().to_string();
+
+    let playlist_query = supabase
+        .select("Users")
+        .eq("id", &uuid)
+        .execute().await.unwrap();
+
+    let mut playlist = playlist_query.first().unwrap()["playlist"].clone();
+
+    if let Some(track) = playlist["tracks"].as_array_mut() {
+        track.retain(|item| item["title"] != track_title);
+    }
+
+    let _update = supabase.update_with_column_name("Users", "id", &uuid, json!({
+        "playlist": playlist
+    })).await.unwrap();
+
+    HttpResponse::Ok()
 }

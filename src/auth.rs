@@ -26,8 +26,12 @@ async fn create_user(supabase: web::Data<SupabaseClient>, path: web::Path<(Strin
                 let user: User = User {
                     username,
                     pswd: hash(pswd, DEFAULT_COST).unwrap(),
-                    playlist: json!({}),
-                    tracks: json!({})
+                    playlist: json!({
+                        "tracks": []
+                    }),
+                    tracks: json!({
+                        "tracks": []
+                    })
                 };
 
                 let insert = supabase.insert_without_defined_key("Users", json!({
@@ -122,4 +126,22 @@ pub async fn is_user_logged_in(supabase: &web::Data<SupabaseClient>, req: &HttpR
     } else {
         false
     }
+}
+
+pub async fn get_playlist(supabase: &web::Data<SupabaseClient>, req: &HttpRequest) -> Vec<String> {
+    let playlist_query = supabase
+        .select("Users")
+        .eq("id", req.cookie("user_id").unwrap().value())
+        .execute().await.unwrap();
+
+    let playlist = playlist_query.first().unwrap()["playlist"].clone();
+
+    let titles_quote: Vec<String> = playlist["tracks"].as_array().unwrap()
+        .iter()
+        .filter_map(|track| Some(track.get("title").unwrap().to_string()))
+        .collect();
+
+    let titles = titles_quote.iter().map(|s| s[1..s.len()-1].to_string()).collect();
+
+    titles
 }
