@@ -5,8 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotifuck</title>
     <link rel="stylesheet" href="/static/css/default.css">
+    <link rel="stylesheet" href="/static/css/index.css">
 </head>
 <body>
-    
+    <div class="header">
+        <h1>Spotifuck</h1>
+        <button class="search" onclick="window.location.href = '/search'">rechercher une musique</button>
+        <button class="settings" onclick="window.location.href = '/settings'">paramètres</button>
+    </div>
+
+    <div class="main">
+        <button onclick="window.location.href = '/playlist'">playlist</button>
+    </div>
 </body>
 </html>

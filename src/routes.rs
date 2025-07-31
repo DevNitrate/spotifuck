@@ -38,14 +38,3 @@ async fn uploadp(supabase: web::Data<SupabaseClient>, req: HttpRequest) -> impl 
         redirect("/login")
     }
 }
-
-#[actix_web::get("/test")]
-async fn test() -> impl Responder {
-    let mut ctx = tera::Context::new();
-    ctx.insert("status", "réussie");
-    ctx.insert("msg", "votre publication a réussie");
-    ctx.insert("btn_msg", "page d'accueil");
-    ctx.insert("url", "/");
-
-    render_page("upload_res.html", ctx)
-}

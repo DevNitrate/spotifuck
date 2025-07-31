@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 use supabase_rs::SupabaseClient;
 use tera::Tera;
 
-use crate::{archive::upload, auth::{create_user, login, logout}, routes::{index, loginp, signin, test, uploadp}};
+use crate::{archive::upload, auth::{create_user, login, logout}, routes::{index, loginp, signin, uploadp}};
 
 mod routes;
 mod archive;
@@ -49,7 +49,7 @@ async fn main() -> std::io::Result<()> {
             .default_service(web::to(not_found))
             .app_data(supabase_data.clone())
             .service(Files::new("/static", "./static"))
-            .service(index).service(create_user).service(login).service(logout).service(signin).service(loginp).service(uploadp).service(upload).service(test)
+            .service(index).service(create_user).service(login).service(logout).service(signin).service(loginp).service(uploadp).service(upload)
     })
     .bind(("0.0.0.0", port)).unwrap()
     .run().await
