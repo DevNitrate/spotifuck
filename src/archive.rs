@@ -73,7 +73,7 @@ pub async fn upload(supabase: web::Data<SupabaseClient>, mut payload: Multipart,
         let username = q.first().unwrap()["username"].as_str().unwrap();
         let mut user_tracks = q.first().unwrap()["tracks"].clone();
 
-        let file = fs::read(format!("./uploads/{}", filen)).unwrap();
+        let file = fs::read(format!("/tmp/{}", filen)).unwrap();
 
         let archive_name = format!("{}-{}{}", &filen[..filen.len()-4], SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs(), &filen[filen.len()-4..]);
 
