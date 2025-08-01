@@ -32,7 +32,7 @@ pub async fn upload(supabase: web::Data<SupabaseClient>, mut payload: Multipart,
                 .map(|f| sanitize_filename::sanitize(f))
                 .unwrap_or("upload.bin".into());
     
-            let filepath = format!("./tmp/{}", filename);
+            let filepath = format!("/tmp/{}", filename);
             filen = filename.clone();
             filep = filepath.clone();
             let mut f = File::create(filepath).unwrap();
