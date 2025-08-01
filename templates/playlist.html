@@ -18,64 +18,63 @@
             <div class="track">
                 <h1 id="title" data-title="{{ track.title }}" class="title">{{ track.title }}<br><span class="artist">{{ track.artist }}</span></h1>
                 <div class="player">
-                    <button id="control"></button>
-                    <input type="range" id="seek" value="0" min="0" max="1000">
+                    <button id="control" class="control"></button>
+                    <input type="range" id="seek" class="seek" value="0" min="0" max="1000">
                 </div>
-                <audio id="audio">
+                <audio class="audio" id="audio">
                     <source src="{{ track.url }}" type="audio/{{ track.format }}">
                     Your browser does not support the audio tag.
                 </audio>
-                <button id="playlist">{{ track.playlist }}</button>
+                <button id="playlist" class="playlist">{{ track.playlist }}</button>
             </div>
         {% endfor %}
     </div>
 </body>
 <script>
-    let audio = document.getElementById("audio")
-    let control = document.getElementById("control")
-    let seek = document.getElementById("seek")
-    let playlist = document.getElementById("playlist")
-    let title = document.getElementById("title")
-    let search = document.getElementById("search-btn")
-    let bar = document.getElementById("search-bar")
+    let au = document.getElementById("audio")
 
-    function isPlaying() {
-        return !audio.paused && !audio.ended && audio.readyState > 2;
-    }
+    if (au != null) {
+        document.querySelectorAll(".audio").forEach((audio) => {
+            function isPlaying() {
+                return !audio.paused && !audio.ended && audio.readyState > 2;
+            }
 
-    control.addEventListener("click", () => {
-        if (isPlaying()) {
-            control.style = 'background-image: url("/static/play.png")'
-            audio.pause()
-        } else {
-            control.style = 'background-image: url("/static/pause.png")'
-            audio.play()
-        }
-    })
+            let track = audio.closest(".track");
+            let control = track.querySelector(".control");
+            let seek = track.querySelector(".seek");
+            let playlist = track.querySelector(".playlist");
+            let title = track.querySelector(".title");
 
-    audio.ontimeupdate = () => {
-        seek.value = (audio.currentTime / audio.duration) * 1000;
-    }
+            control.addEventListener("click", () => {
+                if (isPlaying()) {
+                    control.style = 'background-image: url("/static/play.png")'
+                    audio.pause()
+                } else {
+                    control.style = 'background-image: url("/static/pause.png")'
+                    audio.play()
+                }
+            })
 
-    seek.oninput = () => {
-        audio.currentTime = (seek.value / 1000) * audio.duration;
-    }
+            audio.ontimeupdate = () => {
+                seek.value = (audio.currentTime / audio.duration) * 1000;
+            }
 
-    playlist.onclick = async () => {
-        if (playlist.innerText == "+") {
-            let url = "/playlist/add/" + title.dataset.title
-            let req = await fetch(url, { method: "POST" })
-            playlist.innerText = "-"
-        } else if (playlist.innerText == "-") {
-            let url = "/playlist/delete/" + title.dataset.title
-            let req = await fetch(url, { method: "POST" })
-            window.location.href = "/playlist"
-        }
-    }
+            seek.oninput = () => {
+                audio.currentTime = (seek.value / 1000) * audio.duration;
+            }
 
-    search.onclick = () => {
-        let url = "/search?track=" + bar.value
-        window.location.href = url
+            playlist.onclick = async () => {
+                if (playlist.innerText == "+") {
+                    let url = "/playlist/add/" + title.dataset.title
+                    let req = await fetch(url, { method: "POST" })
+                    playlist.innerText = "-"
+                } else if (playlist.innerText == "-") {
+                    let url = "/playlist/delete/" + title.dataset.title
+                    let req = await fetch(url, { method: "POST" })
+                    window.location.href = "/playlist"
+                }
+            }
+        })
     }
 </script>
 </html>
