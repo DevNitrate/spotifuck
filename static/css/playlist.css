@@ -33,21 +33,6 @@ button {
     margin: 0;
 }
 
-button.search-btn {
-    margin-left: auto;
-    margin-right: 20px;
-}
-
-input {
-    outline: none;
-    border: none;
-    height: 50px;
-    width: 40%;
-    padding: 0 20px 0 20px;
-    font-size: 30px;
-    border-radius: 15px;
-}
-
 div.tracks {
     flex: 1;
     display: flex;
@@ -102,4 +87,20 @@ div.player {
     margin-right: 20px;
     display: flex;
     align-items: center;
+}
+
+button.search {
+    background-color: #fff;
+    border: 5px solid transparent;
+}
+
+button.search:hover {
+    color: #fff;
+    background-color: #181818;
+    border: 5px solid #fff;
+}
+
+button.settings {
+    margin-right: 20px;
+    margin-left: auto;
 }

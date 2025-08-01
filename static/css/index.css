@@ -41,6 +41,7 @@ h1 {
     color: #fff;
     left: 20px;
     font-size: 50px;
+    cursor: pointer;
 }
 
 div.main {
@@ -48,6 +49,10 @@ div.main {
     flex: 1;
     justify-content: center;
     align-items: center;
+}
+
+button.playlist {
+    margin-right: 40px;
 }
 
 @media screen and (max-width: 890px) {

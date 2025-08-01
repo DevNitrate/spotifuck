@@ -22,15 +22,23 @@ async fn index(supabase: web::Data<SupabaseClient>, req: HttpRequest) -> impl Re
 }
 
 #[actix_web::get("/signin")]
-async fn signin() -> impl Responder {
-    let ctx = tera::Context::new();
-    render_page("signin.html", ctx)
+async fn signin(supabase: web::Data<SupabaseClient>, req: HttpRequest) -> impl Responder {
+    if is_user_logged_in(&supabase, &req).await {
+        redirect("/")
+    } else {
+        let ctx = tera::Context::new();
+        render_page("signin.html", ctx)
+    }
 }
 
 #[actix_web::get("/login")]
-async fn loginp() -> impl Responder {
-    let ctx = tera::Context::new();
-    render_page("login.html", ctx)
+async fn loginp(supabase: web::Data<SupabaseClient>, req: HttpRequest) -> impl Responder {
+    if is_user_logged_in(&supabase, &req).await {
+        redirect("/")
+    } else {
+        let ctx = tera::Context::new();
+        render_page("login.html", ctx)
+    }
 }
 
 #[actix_web::get("/upload")]
@@ -112,13 +120,77 @@ async fn search(supabase: web::Data<SupabaseClient>, req: HttpRequest, track: we
             ctx.insert("tracks", &tracks_ctx);
             render_page("search.html", ctx)
         } else {
-            let mut tracks: Vec<TrackCtx> = Vec::new();
+            let tracks: Vec<TrackCtx> = Vec::new();
 
             let mut ctx = tera::Context::new();
             ctx.insert("tracks", &tracks);
             render_page("search.html", ctx)
         }
 
+    } else {
+        redirect("/login")
+    }
+}
+
+#[actix_web::get("/playlist")]
+async fn playlistp(supabase: web::Data<SupabaseClient>, req: HttpRequest) -> impl Responder {
+    if is_user_logged_in(&supabase, &req).await {
+        let client = reqwest::Client::new();
+        let supabase_url = var("SUPABASE_URL").unwrap();
+        let supabase_key = var("SUPABASE_KEY").unwrap();
+
+        let track_query = client.post(format!("{}/rest/v1/rpc/get_user_tracks", supabase_url))
+            .header("apikey", &supabase_key)
+            .header("Authorization", format!("Bearer {}", &supabase_key))
+            .header("Content-Type", "application/json")
+            .json(&json!({
+                "user_id": req.cookie("user_id").unwrap().value()
+            }))
+            .send().await.unwrap();
+
+        let tracks_json: serde_json::Value = track_query.json().await.unwrap();
+        let mut tracks: Vec<TrackCtx> = Vec::new();
+
+        for track_json in tracks_json.as_array().unwrap() {
+            let title = track_json["title"].to_string();
+            let artist = track_json["artist"].to_string();
+            let url = track_json["url"].to_string();
+            let format = track_json["format"].to_string();
+
+            let track = TrackCtx {
+                title: (&title[1..title.len()-1]).to_string(),
+                artist: (&artist[1..artist.len()-1]).to_string(),
+                url: (&url[1..url.len()-1]).to_string(),
+                format: (&format[1..format.len()-1]).to_string(),
+                playlist: "-".to_string()
+            };
+
+            tracks.push(track);
+        }
+
+        let mut ctx = tera::Context::new();
+        ctx.insert("tracks", &tracks);
+        render_page("playlist.html", ctx)
+    } else {
+        redirect("/login")
+    }
+}
+
+#[actix_web::get("/settings")]
+async fn settings(supabase: web::Data<SupabaseClient>, req: HttpRequest) -> impl Responder {
+    if is_user_logged_in(&supabase, &req).await {
+        let uuid = req.cookie("user_id").unwrap().value().to_string();
+
+        let user_query = supabase
+            .select("Users")
+            .eq("id", &uuid)
+            .execute().await.unwrap();
+
+        let username = user_query.first().unwrap()["username"].as_str().unwrap();
+        
+        let mut ctx = tera::Context::new();
+        ctx.insert("username", username);
+        render_page("settings.html", ctx)
     } else {
         redirect("/login")
     }

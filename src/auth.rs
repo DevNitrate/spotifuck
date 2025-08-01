@@ -105,6 +105,17 @@ async fn logout() -> impl Responder {
     HttpResponse::Ok().cookie(cookie).body("logged out")
 }
 
+#[actix_web::post("/auth/delete")]
+async fn delete(supabase: web::Data<SupabaseClient>, req: HttpRequest) -> impl Responder {
+    let uuid = req.cookie("user_id").unwrap().value().to_string();
+
+    let _delete = supabase.delete("Users", &uuid).await.unwrap();
+
+    let cookie = Cookie::build("user_id", "").path("/").max_age(Duration::ZERO).finish();
+
+    HttpResponse::Ok().cookie(cookie).body("account deleted")
+}
+
 pub async fn is_user_logged_in(supabase: &web::Data<SupabaseClient>, req: &HttpRequest) -> bool {
     if let Some(cookie) = req.cookie("user_id") {
         let query = supabase

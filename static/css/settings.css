@@ -1,0 +1,78 @@
+body {
+    display: flex;
+    height: 100dvh;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+div.header {
+    display: flex;
+    width: 100%;
+    height: fit-content;
+    background-color: #181818;
+    padding: 15px 0 15px 0;
+    justify-content: center;
+    text-align: center;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+}
+
+h1 {
+    color: #fff;
+}
+
+h1.logo {
+    margin-right: auto;
+    margin-left: 20px;
+    left: 20px;
+    font-size: 50px;
+    cursor: pointer;
+}
+
+h1.username {
+    margin-bottom: 20px;
+    font-size: 60px;
+}
+
+button {
+    margin: 0;
+}
+
+div.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #181818;
+    width: fit-content;
+    padding: 15px 15px 15px 15px;
+    border-radius: 20px;
+}
+
+button.search {
+    background-color: #fff;
+    border: 5px solid transparent;
+}
+
+button.search:hover {
+    color: #fff;
+    background-color: #181818;
+    border: 5px solid #fff;
+}
+
+button.settings {
+    margin-right: 20px;
+    margin-left: auto;
+}
+
+button.logout {
+    background-color: #ff7411;
+    color: #fff;
+}
+
+button.delete {
+    margin-top: 10px;
+    background-color: #c92e2e;
+    color: #fff;
+}

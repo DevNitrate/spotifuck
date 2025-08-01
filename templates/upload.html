@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Publier une musique</title>
     <link rel="stylesheet" href="/static/css/default.css">
-    <link rel="stylesheet" href="/static/css/form.css">
+    <link rel="stylesheet" href="/static/css/upload.css">
 </head>
 <body>
+    <div class="header">
+        <h1 class="logo" onclick="window.location.href = '/'">Spotifuck</h1>
+    </div>
     <div>
         <form action="/upload" method="post" enctype="multipart/form-data">
             <h1>Publiez une musique</h1>

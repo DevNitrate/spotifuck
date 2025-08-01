@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playlist</title>
+    <link rel="stylesheet" href="/static/css/default.css">
+    <link rel="stylesheet" href="/static/css/playlist.css">
+</head>
+<body>
+    <div class="header">
+        <h1 class="logo" onclick="window.location.href = '/'">Spotifuck</h1>
+        <button class="search" onclick="window.location.href = '/search?track='">rechercher une musique</button>
+        <button class="settings" onclick="window.location.href = '/settings'">paramètres</button>
+    </div>
+    <div class="tracks">
+        {% for track in tracks %}
+            <div class="track">
+                <h1 id="title" data-title="{{ track.title }}" class="title">{{ track.title }}<br><span class="artist">{{ track.artist }}</span></h1>
+                <div class="player">
+                    <button id="control"></button>
+                    <input type="range" id="seek" value="0" min="0" max="1000">
+                </div>
+                <audio id="audio">
+                    <source src="{{ track.url }}" type="audio/{{ track.format }}">
+                    Your browser does not support the audio tag.
+                </audio>
+                <button id="playlist">{{ track.playlist }}</button>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+<script>
+    let audio = document.getElementById("audio")
+    let control = document.getElementById("control")
+    let seek = document.getElementById("seek")
+    let playlist = document.getElementById("playlist")
+    let title = document.getElementById("title")
+    let search = document.getElementById("search-btn")
+    let bar = document.getElementById("search-bar")
+
+    function isPlaying() {
+        return !audio.paused && !audio.ended && audio.readyState > 2;
+    }
+
+    control.addEventListener("click", () => {
+        if (isPlaying()) {
+            control.style = 'background-image: url("/static/play.png")'
+            audio.pause()
+        } else {
+            control.style = 'background-image: url("/static/pause.png")'
+            audio.play()
+        }
+    })
+
+    audio.ontimeupdate = () => {
+        seek.value = (audio.currentTime / audio.duration) * 1000;
+    }
+
+    seek.oninput = () => {
+        audio.currentTime = (seek.value / 1000) * audio.duration;
+    }
+
+    playlist.onclick = async () => {
+        if (playlist.innerText == "+") {
+            let url = "/playlist/add/" + title.dataset.title
+            let req = await fetch(url, { method: "POST" })
+            playlist.innerText = "-"
+        } else if (playlist.innerText == "-") {
+            let url = "/playlist/delete/" + title.dataset.title
+            let req = await fetch(url, { method: "POST" })
+            window.location.href = "/playlist"
+        }
+    }
+
+    search.onclick = () => {
+        let url = "/search?track=" + bar.value
+        window.location.href = url
+    }
+</script>
+</html>

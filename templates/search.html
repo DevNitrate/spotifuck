@@ -9,8 +9,8 @@
 </head>
 <body>
     <div class="header">
-        <h1 class="logo">Spotifuck</h1>
-        <input type="text" id="search-bar" class="search-bar" placeholder="titre d'une musique">
+        <h1 class="logo" onclick="window.location.href = '/'">Spotifuck</h1>
+        <input type="text" id="search-bar" class="search-bar" placeholder="titre d'une musique" autocomplete="off">
         <button id="search-btn" class="search-btn">chercher</button>
     </div>
     <div class="tracks">
@@ -43,39 +43,54 @@
         return !audio.paused && !audio.ended && audio.readyState > 2;
     }
 
-    control.addEventListener("click", () => {
-        if (isPlaying()) {
-            control.style = 'background-image: url("/static/play.png")'
-            audio.pause()
-        } else {
-            control.style = 'background-image: url("/static/pause.png")'
-            audio.play()
+    if (audio != null) {
+        control.addEventListener("click", () => {
+            if (isPlaying()) {
+                control.style = 'background-image: url("/static/play.png")'
+                audio.pause()
+            } else {
+                control.style = 'background-image: url("/static/pause.png")'
+                audio.play()
+            }
+        })
+    
+        audio.ontimeupdate = () => {
+            seek.value = (audio.currentTime / audio.duration) * 1000;
         }
-    })
-
-    audio.ontimeupdate = () => {
-        seek.value = (audio.currentTime / audio.duration) * 1000;
-    }
-
-    seek.oninput = () => {
-        audio.currentTime = (seek.value / 1000) * audio.duration;
-    }
-
-    playlist.onclick = async () => {
-        if (playlist.innerText == "+") {
-            let url = "/playlist/add/" + title.dataset.title
-            let req = await fetch(url, { method: "POST" })
-            playlist.innerText = "-"
-        } else if (playlist.innerText == "-") {
-            let url = "/playlist/delete/" + title.dataset.title
-            let req = await fetch(url, { method: "POST" })
-            playlist.innerText = "+" 
+    
+        seek.oninput = () => {
+            audio.currentTime = (seek.value / 1000) * audio.duration;
         }
+    
+        playlist.onclick = async () => {
+            if (playlist.innerText == "+") {
+                let url = "/playlist/add/" + title.dataset.title
+                let req = await fetch(url, { method: "POST" })
+                playlist.innerText = "-"
+            } else if (playlist.innerText == "-") {
+                let url = "/playlist/delete/" + title.dataset.title
+                let req = await fetch(url, { method: "POST" })
+                playlist.innerText = "+" 
+            }
+        }    
     }
+
 
     search.onclick = () => {
-        let url = "/search?track=" + bar.value
-        window.location.href = url
+        if (bar.value != "") {
+            let url = "/search?track=" + bar.value
+            window.location.href = url
+        }
     }
+
+    bar.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            if (bar.value != "") {
+                let url = "/search?track=" + bar.value
+                window.location.href = url
+            }
+        }
+
+    })
 </script>
 </html>
